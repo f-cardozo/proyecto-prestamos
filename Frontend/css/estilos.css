@@ -1,0 +1,81 @@
+body {
+    background: #f0f0f0;
+    color: #000;
+    font-family: sans-serif;
+    font-size: 11pt;
+    margin: 10px;
+}
+
+header {
+    background: #e5efff;
+    border: 1px solid #99c;
+    padding: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+section {
+    background: #fff;
+    border: 1px solid #aaa;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+input, select, textarea, button {
+    font-family: sans-serif;
+    font-size: 10pt;
+    padding: 4px;
+    border: 1px solid #777;
+    background: #fff;
+}
+
+button, input[type="submit"] {
+    background: #d8d8d8;
+    border: 1px solid #777;
+    cursor: pointer;
+    width: auto;
+    padding: 4px 10px;
+}
+
+button:hover {
+    background: #c8c8c8;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 5px;
+    font-size: 10pt;
+}
+
+th, td {
+    padding: 4px 6px;
+    border: 1px solid #bbb;
+    text-align: left;
+}
+
+th {
+    background: #e5efff;
+}
+
+tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+#mensaje-error {
+    color: #900;
+    font-weight: bold;
+}
+
+#mensaje-exito {
+    color: #090;
+    font-weight: bold;
+}

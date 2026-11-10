@@ -1,17 +1,17 @@
 const API_URL = 'http://localhost:8000/api';
 
 const formulario = document.getElementById('formulario-ticket');
-const campoIdTicket = document.getElementById('id-ticket');
-const campoDescripcion = document.getElementById('descripcion');
-const campoSala = document.getElementById('sala');
+const campoIdPrestamo = document.getElementById('id-ticket');
+const campoMotivo = document.getElementById('descripcion');
+const campoDispositivo = document.getElementById('sala');
 const campoPrioridad = document.getElementById('prioridad');
 
 const tituloFormulario = document.getElementById(
     'titulo-formulario'
 );
 
-const listaTickets = document.getElementById('lista-tickets');
-const sinTickets = document.getElementById('sin-tickets');
+const listaPrestamos = document.getElementById('lista-tickets');
+const sinPrestamos = document.getElementById('sin-tickets');
 
 const mensajeError = document.getElementById('mensaje-error');
 const mensajeExito = document.getElementById('mensaje-exito');
@@ -28,19 +28,7 @@ const botonLogout = document.getElementById(
     'boton-logout'
 );
 
-/*
-|--------------------------------------------------------------------------
-| Inicio
-|--------------------------------------------------------------------------
-*/
-
 cargarDatos();
-
-/*
-|--------------------------------------------------------------------------
-| Crear o modificar un ticket
-|--------------------------------------------------------------------------
-*/
 
 formulario.addEventListener(
     'submit',
@@ -49,14 +37,14 @@ formulario.addEventListener(
 
         ocultarMensajes();
 
-        const idTicket = campoIdTicket.value;
-        const descripcion = campoDescripcion.value.trim();
-        const sala = campoSala.value;
+        const idPrestamo = campoIdPrestamo.value;
+        const motivoPrestamo = campoMotivo.value.trim();
+        const dispositivo = campoDispositivo.value;
         const idPrioridad = campoPrioridad.value;
 
-        if (descripcion === '' || idPrioridad === '') {
+        if (motivoPrestamo === '' || idPrioridad === '') {
             mostrarError(
-                'Debes completar la descripción y la prioridad.'
+                'Debes completar el motivo y la prioridad.'
             );
 
             return;
@@ -64,22 +52,22 @@ formulario.addEventListener(
 
         bloquearFormulario(true);
 
-        const datosTicket = {
-            descripcion: descripcion,
-            sala: sala,
+        const datosPrestamo = {
+            motivo_prestamo: motivoPrestamo,
+            dispositivo: dispositivo === '' ? null : dispositivo,
             id_prioridad: Number(idPrioridad)
         };
 
         let metodo = 'POST';
 
-        if (idTicket !== '') {
+        if (idPrestamo !== '') {
             metodo = 'PUT';
-            datosTicket.id_ticket = Number(idTicket);
+            datosPrestamo.id_prestamo = Number(idPrestamo);
         }
 
         try {
             const respuesta = await fetch(
-                API_URL + '/tickets',
+                API_URL + '/prestamos',
                 {
                     method: metodo,
 
@@ -89,7 +77,7 @@ formulario.addEventListener(
 
                     credentials: 'include',
 
-                    body: JSON.stringify(datosTicket)
+                    body: JSON.stringify(datosPrestamo)
                 }
             );
 
@@ -98,7 +86,7 @@ formulario.addEventListener(
             if (!respuesta.ok) {
                 throw new Error(
                     datos.error ||
-                    'No fue posible guardar el ticket.'
+                    'No fue posible guardar el préstamo.'
                 );
             }
 
@@ -116,22 +104,10 @@ formulario.addEventListener(
     }
 );
 
-/*
-|--------------------------------------------------------------------------
-| Cancelar modificación
-|--------------------------------------------------------------------------
-*/
-
 botonCancelar.addEventListener('click', function () {
     volverModoCreacion();
     ocultarMensajes();
 });
-
-/*
-|--------------------------------------------------------------------------
-| Cerrar sesión
-|--------------------------------------------------------------------------
-*/
 
 botonLogout.addEventListener('click', async function () {
     try {
@@ -147,16 +123,10 @@ botonLogout.addEventListener('click', async function () {
     }
 });
 
-/*
-|--------------------------------------------------------------------------
-| Obtener tickets y prioridades
-|--------------------------------------------------------------------------
-*/
-
 async function cargarDatos() {
     try {
         const respuesta = await fetch(
-            API_URL + '/tickets',
+            API_URL + '/prestamos',
             {
                 method: 'GET',
                 credentials: 'include'
@@ -176,22 +146,16 @@ async function cargarDatos() {
         if (!respuesta.ok) {
             throw new Error(
                 datos.error ||
-                'No fue posible obtener los tickets.'
+                'No fue posible obtener los préstamos.'
             );
         }
 
         cargarPrioridades(datos.prioridades);
-        mostrarTickets(datos.tickets);
+        mostrarPrestamos(datos.prestamos);
     } catch (error) {
         mostrarError(error.message);
     }
 }
-
-/*
-|--------------------------------------------------------------------------
-| Mostrar prioridades
-|--------------------------------------------------------------------------
-*/
 
 function cargarPrioridades(prioridades) {
     const prioridadSeleccionada = campoPrioridad.value;
@@ -217,41 +181,35 @@ function cargarPrioridades(prioridades) {
     campoPrioridad.value = prioridadSeleccionada;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Mostrar tickets
-|--------------------------------------------------------------------------
-*/
+function mostrarPrestamos(prestamos) {
+    listaPrestamos.innerHTML = '';
 
-function mostrarTickets(tickets) {
-    listaTickets.innerHTML = '';
-
-    if (tickets.length === 0) {
-        sinTickets.hidden = false;
+    if (prestamos.length === 0) {
+        sinPrestamos.hidden = false;
         return;
     }
 
-    sinTickets.hidden = true;
+    sinPrestamos.hidden = true;
 
-    tickets.forEach(function (ticket) {
+    prestamos.forEach(function (prestamo) {
         const fila = document.createElement('tr');
 
         const celdaFecha = document.createElement('td');
-        const celdaDescripcion = document.createElement('td');
-        const celdaSala = document.createElement('td');
+        const celdaMotivo = document.createElement('td');
+        const celdaDispositivo = document.createElement('td');
         const celdaPrioridad = document.createElement('td');
         const celdaAccion = document.createElement('td');
 
-        celdaFecha.textContent = formatearFecha(ticket.fecha);
-        celdaDescripcion.textContent = ticket.descripcion;
+        celdaFecha.textContent = formatearFecha(prestamo.fecha);
+        celdaMotivo.textContent = prestamo.motivo_prestamo;
 
-        if (ticket.sala === null) {
-            celdaSala.textContent = 'Sin sala';
+        if (prestamo.dispositivo === null) {
+            celdaDispositivo.textContent = 'Sin dispositivo';
         } else {
-            celdaSala.textContent = ticket.sala;
+            celdaDispositivo.textContent = prestamo.dispositivo;
         }
 
-        celdaPrioridad.textContent = ticket.prioridad;
+        celdaPrioridad.textContent = prestamo.prioridad;
 
         const botonModificar = document.createElement('button');
 
@@ -261,90 +219,66 @@ function mostrarTickets(tickets) {
         botonModificar.addEventListener(
             'click',
             function () {
-                cargarTicketEnFormulario(ticket);
+                cargarPrestamoEnFormulario(prestamo);
             }
         );
 
         celdaAccion.appendChild(botonModificar);
 
         fila.appendChild(celdaFecha);
-        fila.appendChild(celdaDescripcion);
-        fila.appendChild(celdaSala);
+        fila.appendChild(celdaMotivo);
+        fila.appendChild(celdaDispositivo);
         fila.appendChild(celdaPrioridad);
         fila.appendChild(celdaAccion);
 
-        listaTickets.appendChild(fila);
+        listaPrestamos.appendChild(fila);
     });
 }
 
-/*
-|--------------------------------------------------------------------------
-| Cargar un ticket para modificarlo
-|--------------------------------------------------------------------------
-*/
+function cargarPrestamoEnFormulario(prestamo) {
+    campoIdPrestamo.value = prestamo.id_prestamo;
+    campoMotivo.value = prestamo.motivo_prestamo;
 
-function cargarTicketEnFormulario(ticket) {
-    campoIdTicket.value = ticket.id_ticket;
-    campoDescripcion.value = ticket.descripcion;
-
-    if (ticket.sala === null) {
-        campoSala.value = '';
+    if (prestamo.dispositivo === null) {
+        campoDispositivo.value = '';
     } else {
-        campoSala.value = ticket.sala;
+        campoDispositivo.value = prestamo.dispositivo;
     }
 
-    campoPrioridad.value = ticket.id_prioridad;
+    campoPrioridad.value = prestamo.id_prioridad;
 
-    tituloFormulario.textContent = 'Modificar ticket';
+    tituloFormulario.textContent = 'Modificar préstamo';
     botonGuardar.textContent = 'Guardar cambios';
     botonCancelar.hidden = false;
 
-    campoDescripcion.focus();
+    campoMotivo.focus();
 }
-
-/*
-|--------------------------------------------------------------------------
-| Volver al formulario de creación
-|--------------------------------------------------------------------------
-*/
 
 function volverModoCreacion() {
     formulario.reset();
 
-    campoIdTicket.value = '';
+    campoIdPrestamo.value = '';
 
-    tituloFormulario.textContent = 'Crear ticket';
-    botonGuardar.textContent = 'Crear ticket';
+    tituloFormulario.textContent = 'Crear préstamo';
+    botonGuardar.textContent = 'Crear préstamo';
     botonCancelar.hidden = true;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Bloquear formulario
-|--------------------------------------------------------------------------
-*/
-
 function bloquearFormulario(bloquear) {
-    campoDescripcion.disabled = bloquear;
-    campoSala.disabled = bloquear;
+    campoMotivo.disabled = bloquear;
+    campoDispositivo.disabled = bloquear;
     campoPrioridad.disabled = bloquear;
     botonGuardar.disabled = bloquear;
     botonCancelar.disabled = bloquear;
 
     if (bloquear === true) {
         botonGuardar.textContent = 'Guardando...';
-    } else if (campoIdTicket.value === '') {
-        botonGuardar.textContent = 'Crear ticket';
+    } else if (campoIdPrestamo.value === '') {
+        botonGuardar.textContent = 'Crear préstamo';
     } else {
         botonGuardar.textContent = 'Guardar cambios';
     }
 }
-
-/*
-|--------------------------------------------------------------------------
-| Mensajes
-|--------------------------------------------------------------------------
-*/
 
 function mostrarError(mensaje) {
     mensajeError.textContent = mensaje;
@@ -358,12 +292,6 @@ function ocultarMensajes() {
     mensajeExito.textContent = '';
     mensajeExito.hidden = true;
 }
-
-/*
-|--------------------------------------------------------------------------
-| Formatear fecha
-|--------------------------------------------------------------------------
-*/
 
 function formatearFecha(fecha) {
     const fechaJavaScript = new Date(

@@ -7,11 +7,11 @@ const mensajeError = document.getElementById('mensaje-error');
 const botonIngresar = formulario.querySelector('button[type="submit"]');
 
 formulario.addEventListener('submit', async (eventoEnvio) => {
-    eventoEnvio.preventDefault(); //evito que se recargue la pagina al enviar el formulario
+    eventoEnvio.preventDefault(); // evito que se recargue la pagina al enviar el formulario
 
-    ocultarError(); //oculto errores de intentos anteriores
+    ocultarError(); // oculto errores de intentos anteriores
 
-    const usuario = campoUsuario.value.trim(); //elimino espacios en blanco al inicio y al final del usuario
+    const usuario = campoUsuario.value.trim(); // elimino espacios en blanco al inicio y al final del usuario
     const password = campoPassword.value;
 
     if (usuario === '' || password === '') {
@@ -54,6 +54,11 @@ formulario.addEventListener('submit', async (eventoEnvio) => {
 
         if (rol === 'encargado') {
             window.location.replace('templates/encargado.html');
+            return;
+        }
+
+        if (rol === 'alumno') {
+            window.location.replace('templates/alumno.html');
             return;
         }
 

@@ -1,9 +1,9 @@
 const API_URL = 'http://localhost:8000/api';
 
 const formulario = document.getElementById('formulario-ticket');
-const campoIdTicket = document.getElementById('id-ticket');
-const campoDescripcion = document.getElementById('descripcion');
-const campoSala = document.getElementById('sala');
+const campoIdPrestamo = document.getElementById('id-ticket');
+const campoMotivo = document.getElementById('descripcion');
+const campoDispositivo = document.getElementById('sala');
 const campoPrioridad = document.getElementById('prioridad');
 const campoEstado = document.getElementById('estado');
 
@@ -15,8 +15,8 @@ const tituloFormulario = document.getElementById(
     'titulo-formulario'
 );
 
-const listaTickets = document.getElementById('lista-tickets');
-const sinTickets = document.getElementById('sin-tickets');
+const listaPrestamos = document.getElementById('lista-tickets');
+const sinPrestamos = document.getElementById('sin-tickets');
 
 const mensajeError = document.getElementById('mensaje-error');
 const mensajeExito = document.getElementById('mensaje-exito');
@@ -42,21 +42,21 @@ formulario.addEventListener(
 
         ocultarMensajes();
 
-        const idTicket = campoIdTicket.value;
-        const descripcion = campoDescripcion.value.trim();
-        const sala = campoSala.value;
+        const idPrestamo = campoIdPrestamo.value;
+        const motivoPrestamo = campoMotivo.value.trim();
+        const dispositivo = campoDispositivo.value;
         const idPrioridad = campoPrioridad.value;
         const idEstado = campoEstado.value;
 
-        if (descripcion === '' || idPrioridad === '') {
+        if (motivoPrestamo === '' || idPrioridad === '') {
             mostrarError(
-                'Debes completar la descripción y la prioridad.'
+                'Debes completar el motivo y la prioridad.'
             );
 
             return;
         }
 
-        if (idTicket !== '' && idEstado === '') {
+        if (idPrestamo !== '' && idEstado === '') {
             mostrarError(
                 'Debes seleccionar el estado.'
             );
@@ -66,24 +66,24 @@ formulario.addEventListener(
 
         bloquearFormulario(true);
 
-        const datosTicket = {
-            descripcion: descripcion,
-            sala: sala,
+        const datosPrestamo = {
+            motivo_prestamo: motivoPrestamo,
+            dispositivo: dispositivo,
             id_prioridad: Number(idPrioridad)
         };
 
         let metodo = 'POST';
 
-        if (idTicket !== '') {
+        if (idPrestamo !== '') {
             metodo = 'PUT';
 
-            datosTicket.id_ticket = Number(idTicket);
-            datosTicket.id_estado = Number(idEstado);
+            datosPrestamo.id_prestamo = Number(idPrestamo);
+            datosPrestamo.id_estado = Number(idEstado);
         }
 
         try {
             const respuesta = await fetch(
-                API_URL + '/encargado/tickets',
+                API_URL + '/encargado/prestamos',
                 {
                     method: metodo,
 
@@ -93,7 +93,7 @@ formulario.addEventListener(
 
                     credentials: 'include',
 
-                    body: JSON.stringify(datosTicket)
+                    body: JSON.stringify(datosPrestamo)
                 }
             );
 
@@ -102,7 +102,7 @@ formulario.addEventListener(
             if (!respuesta.ok) {
                 throw new Error(
                     datos.error ||
-                    'No fue posible guardar el ticket.'
+                    'No fue posible guardar el préstamo.'
                 );
             }
 
@@ -142,7 +142,7 @@ botonLogout.addEventListener('click', async function () {
 async function cargarDatos() {
     try {
         const respuesta = await fetch(
-            API_URL + '/encargado/tickets',
+            API_URL + '/encargado/prestamos',
             {
                 method: 'GET',
                 credentials: 'include'
@@ -162,7 +162,7 @@ async function cargarDatos() {
         if (!respuesta.ok) {
             throw new Error(
                 datos.error ||
-                'No fue posible obtener los tickets.'
+                'No fue posible obtener los préstamos.'
             );
         }
 
@@ -178,26 +178,10 @@ async function cargarDatos() {
             'id_estado'
         );
 
-        mostrarTickets(datos.tickets);
+        mostrarPrestamos(datos.prestamos);
     } catch (error) {
         mostrarError(error.message);
     }
-}
-
-
-function cargarPrioridades(prioridades)
-{
-    campoPrioridad.innerHTML =
-        '<option value="">Seleccione una prioridad</option>';
-
-    prioridades.forEach(function (prioridad) {
-        const opcion = document.createElement('option');
-
-        opcion.value = prioridad.id_prioridad;
-        opcion.textContent = prioridad.nombre;
-
-        campoPrioridad.appendChild(opcion);
-    });
 }
 
 function cargarOpciones(
@@ -224,35 +208,35 @@ function cargarOpciones(
     });
 }
 
-function mostrarTickets(tickets) {
-    listaTickets.innerHTML = '';
+function mostrarPrestamos(prestamos) {
+    listaPrestamos.innerHTML = '';
 
-    if (tickets.length === 0) {
-        sinTickets.hidden = false;
+    if (prestamos.length === 0) {
+        sinPrestamos.hidden = false;
         return;
     }
 
-    sinTickets.hidden = true;
+    sinPrestamos.hidden = true;
 
-    tickets.forEach(function (ticket) {
+    prestamos.forEach(function (prestamo) {
         const fila = document.createElement('tr');
 
-        agregarCelda(fila, formatearFecha(ticket.fecha));
-        agregarCelda(fila, ticket.creador);
-        agregarCelda(fila, ticket.descripcion);
+        agregarCelda(fila, formatearFecha(prestamo.fecha));
+        agregarCelda(fila, prestamo.creador);
+        agregarCelda(fila, prestamo.motivo_prestamo);
 
-        if (ticket.sala === null) {
-            agregarCelda(fila, 'Sin sala');
+        if (prestamo.dispositivo === null) {
+            agregarCelda(fila, 'Sin dispositivo');
         } else {
-            agregarCelda(fila, ticket.sala);
+            agregarCelda(fila, prestamo.dispositivo);
         }
 
-        agregarCelda(fila, ticket.prioridad);
-        agregarCelda(fila, ticket.estado);
+        agregarCelda(fila, prestamo.prioridad);
+        agregarCelda(fila, prestamo.estado);
 
         const celdaAccion = document.createElement('td');
 
-        if (esModificable(ticket.estado)) {
+        if (esModificable(prestamo.estado)) {
             const botonModificar = document.createElement('button');
 
             botonModificar.type = 'button';
@@ -261,7 +245,7 @@ function mostrarTickets(tickets) {
             botonModificar.addEventListener(
                 'click',
                 function () {
-                    cargarTicketEnFormulario(ticket);
+                    cargarPrestamoEnFormulario(prestamo);
                 }
             );
 
@@ -271,7 +255,7 @@ function mostrarTickets(tickets) {
         }
 
         fila.appendChild(celdaAccion);
-        listaTickets.appendChild(fila);
+        listaPrestamos.appendChild(fila);
     });
 }
 
@@ -290,44 +274,45 @@ function esModificable(estado) {
 
     return (
         estadoNormalizado === 'abierto' ||
-        estadoNormalizado === 'en proceso'
+        estadoNormalizado === 'en proceso' ||
+        estadoNormalizado === 'solicitado'
     );
 }
 
-function cargarTicketEnFormulario(ticket) {
-    campoIdTicket.value = ticket.id_ticket;
-    campoDescripcion.value = ticket.descripcion;
-    campoPrioridad.value = ticket.id_prioridad;
-    campoEstado.value = ticket.id_estado;
+function cargarPrestamoEnFormulario(prestamo) {
+    campoIdPrestamo.value = prestamo.id_prestamo;
+    campoMotivo.value = prestamo.motivo_prestamo;
+    campoPrioridad.value = prestamo.id_prioridad;
+    campoEstado.value = prestamo.id_estado;
 
-    if (ticket.sala === null) {
-        campoSala.value = '';
+    if (prestamo.dispositivo === null) {
+        campoDispositivo.value = '';
     } else {
-        campoSala.value = ticket.sala;
+        campoDispositivo.value = prestamo.dispositivo;
     }
 
-    tituloFormulario.textContent = 'Modificar ticket';
+    tituloFormulario.textContent = 'Modificar préstamo';
     botonGuardar.textContent = 'Guardar cambios';
     botonCancelar.hidden = false;
     contenedorEstado.hidden = false;
 
-    campoDescripcion.focus();
+    campoMotivo.focus();
 }
 
 function volverModoCreacion() {
     formulario.reset();
 
-    campoIdTicket.value = '';
+    campoIdPrestamo.value = '';
 
-    tituloFormulario.textContent = 'Crear ticket';
-    botonGuardar.textContent = 'Crear ticket';
+    tituloFormulario.textContent = 'Crear préstamo';
+    botonGuardar.textContent = 'Crear préstamo';
     botonCancelar.hidden = true;
     contenedorEstado.hidden = true;
 }
 
 function bloquearFormulario(bloquear) {
-    campoDescripcion.disabled = bloquear;
-    campoSala.disabled = bloquear;
+    campoMotivo.disabled = bloquear;
+    campoDispositivo.disabled = bloquear;
     campoPrioridad.disabled = bloquear;
     campoEstado.disabled = bloquear;
     botonGuardar.disabled = bloquear;
@@ -335,8 +320,8 @@ function bloquearFormulario(bloquear) {
 
     if (bloquear === true) {
         botonGuardar.textContent = 'Guardando...';
-    } else if (campoIdTicket.value === '') {
-        botonGuardar.textContent = 'Crear ticket';
+    } else if (campoIdPrestamo.value === '') {
+        botonGuardar.textContent = 'Crear préstamo';
     } else {
         botonGuardar.textContent = 'Guardar cambios';
     }
